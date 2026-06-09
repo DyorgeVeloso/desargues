@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teorema de Desargues — Demostración paso a paso</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d1117;color:#e8eaf6;font-family:'Inter',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 30px;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(1.2rem,2.5vw,1.7rem);
+  color:#fff;text-align:center;margin-bottom:5px;}
+h1 em{color:#C9A84C;font-style:italic;}
+.sub{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#4a5568;
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;text-align:center;}
+.stepper{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;}
+.sb{padding:6px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;
+  background:transparent;border:1px solid #2A3F6A;color:#6B80A0;
+  border-radius:20px;cursor:pointer;transition:all .15s;}
+.sb:hover{border-color:#C9A84C;color:#C9A84C;}
+.sb.on{background:#C9A84C;border-color:#C9A84C;color:#0d1117;font-weight:600;}
+canvas{display:block;width:100%;max-width:900px;border-radius:12px;
+  background:#080c14;border:1px solid #1E3055;}
+.hint{font-size:.7rem;color:#4a5568;text-align:center;
+  font-family:'JetBrains Mono',monospace;margin-top:4px;min-height:16px;}
+.leg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  margin:6px 0;font-size:.72rem;color:#6B80A0;font-family:'JetBrains Mono',monospace;}
+.ld{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+
+/* Panel de explicación */
+.panel{display:flex;gap:14px;margin-top:10px;align-items:flex-start;width:100%;max-width:900px;}
+.sn{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:700;
+  color:#C9A84C;line-height:1;flex-shrink:0;width:40px;padding-top:2px;}
+.info h3{font-size:.95rem;font-weight:600;color:#fff;margin-bottom:5px;}
+.info p{font-size:.87rem;color:#A8B8D0;line-height:1.65;}
+
+/* Enunciado — solo paso 0 */
+.enunciado{
+  background:#0F1D32;border:1px solid #C9A84C;border-radius:10px;
+  padding:14px 18px;margin-top:10px;
+}
+.enunciado .eq-title{
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  color:#C9A84C;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;
+}
+.enunciado blockquote{
+  font-family:'Playfair Display',serif;font-size:.95rem;
+  color:#E8C97A;line-height:1.7;font-style:italic;margin-bottom:8px;
+}
+.enunciado .src{font-size:.72rem;color:#4a5568;font-style:italic;}
+
+/* Fórmula algebraica */
+.fml{font-family:'JetBrains Mono',monospace;font-size:.82rem;
+  background:#0F1D32;border:1px solid #2A3F6A;border-radius:8px;
+  padding:8px 14px;margin-top:9px;color:#E8C97A;text-align:center;}
+
+/* Nota "visto en clase" */
+.nota-clase{
+  display:flex;gap:8px;align-items:flex-start;
+  background:#0d1a2e;border:1px solid #1A3A6A;border-radius:8px;
+  padding:8px 12px;margin-top:9px;
+}
+.nota-clase .tag{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:#C9A84C;font-weight:600;white-space:nowrap;padding-top:1px;
+  letter-spacing:1px;
+}
+.nota-clase p{font-size:.82rem;color:#8AA8D0;line-height:1.55;}
+
+.ref{font-size:.7rem;color:#4a5568;font-style:italic;margin-top:7px;}
+.nav{display:flex;gap:10px;margin-top:12px;justify-content:center;}
+.nb{padding:9px 26px;font-size:.82rem;font-weight:500;
+  border:1px solid #2A3F6A;border-radius:8px;background:#141828;
+  color:#A8B8D0;cursor:pointer;transition:all .15s;}
+.nb:hover{background:#1E3055;color:#fff;}
+.nb.nx{background:#C9A84C;border-color:#C9A84C;color:#0d1117;font-weight:600;}
+.nb.nx:hover{background:#E8C97A;}
+.nb:disabled{opacity:.3;cursor:default;}
+</style>
+</head>
+<body>
+<h1>Demostración — Teorema de <em>Desargues</em></h1>
+<p class="sub">Geometría I · CAECE 2026 · Dyorge Veloso de Souza Luiz</p>
+
+<div class="stepper">
+  <button class="sb on" onclick="go(0)">0 — Enunciado</button>
+  <button class="sb"    onclick="go(1)">1 — △ ABC</button>
+  <button class="sb"    onclick="go(2)">2 — Centro O</button>
+  <button class="sb"    onclick="go(3)">3 — △ A'B'C'</button>
+  <button class="sb"    onclick="go(4)">4 — Punto P</button>
+  <button class="sb"    onclick="go(5)">5 — Q y R</button>
+  <button class="sb"    onclick="go(6)">6 — Eje r  ∎</button>
+  <button class="sb"    onclick="go(7)">▸ Libre</button>
+</div>
+
+<canvas id="cv" width="900" height="560"></canvas>
+<p class="hint" id="hint"></p>
+
+<div class="leg">
+  <span><span class="ld" style="background:#5B9BD5"></span>Triángulo ABC</span>
+  <span><span class="ld" style="background:#C9A84C"></span>Triángulo A'B'C'</span>
+  <span><span class="ld" style="background:#4472A0"></span>Rectas OA, OB, OC</span>
+  <span><span class="ld" style="background:#E05040"></span>P = AB∩A'B'</span>
+  <span><span class="ld" style="background:#E8934A"></span>Q = AC∩A'C'</span>
+  <span><span class="ld" style="background:#9B59B6"></span>R = BC∩B'C'  /  Eje r</span>
+</div>
+
+<div class="panel">
+  <div class="sn" id="snum">—</div>
+  <div class="info" style="flex:1;">
+    <h3 id="stitle">—</h3>
+    <p id="sbody"></p>
+    <!-- Enunciado paso 0 -->
+    <div id="enunciado-box" style="display:none;">
+      <div class="enunciado">
+        <div class="eq-title">Santaló — Geometría Proyectiva, Cap. 11, n.º 3, p. 130</div>
+        <blockquote>
+          "Si dos triángulos están relacionados de manera que las rectas que unen vértices homólogos pasan por un mismo punto, los lados homólogos se cortan en puntos de una misma recta."
+        </blockquote>
+        <div class="src">L. A. Santaló — Geometría Proyectiva, EUDEBA, p. 130</div>
+      </div>
+      <div class="enunciado" style="margin-top:10px;border-color:#4472A0;">
+        <div class="eq-title" style="color:#6B9BD5;">Ayres — Geometría Proyectiva, Cap. 3, p. 32</div>
+        <blockquote style="color:#9DC3E6;">
+          "Si dos triángulos coplanares A₁A₂A₃ y B₁B₂B₃ son perspectivos desde un punto P, ellos son perspectivos desde una línea p; y recíprocamente."
+        </blockquote>
+        <div class="src">F. Ayres Jr. — Geometría Proyectiva, Schaum/McGraw-Hill, p. 32</div>
+      </div>
+    </div>
+    <!-- Nota visto en clase -->
+    <div id="nota-clase-box" style="display:none;" class="nota-clase">
+      <span class="tag" id="nota-tag">✦ VISTO</span>
+      <p id="nota-texto"></p>
+    </div>
+    <!-- Fórmula -->
+    <div class="fml" id="sfml" style="display:none"></div>
+    <p class="ref" id="sref"></p>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nb"    id="bp" onclick="prev()" disabled>← Anterior</button>
+  <button class="nb nx" id="bn" onclick="nxt()">Siguiente →</button>
+</div>
+
+<script>
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W   = cv.width;   // 900
+const H   = cv.height;  // 560
+
+// ══════════════════════════════════════════════════════════════
+// COORDENADAS — verificadas con Python (seed=42, área PQR = 0.0)
+// ══════════════════════════════════════════════════════════════
+const BASE = {
+  O:  {x:330,    y:454},
+  A:  {x:673,    y:346},
+  B:  {x:400,    y:325},
+  C:  {x:226,    y:390},
+  Ap: {x:447.21, y:417.09},
+  Bp: {x:462.66, y:209.53},
+  Cp: {x:256.24, y:408.61},
+  P:  {x:453.76, y:329.14},
+  Q:  {x:105.14, y:401.90},
+  R:  {x:306.85, y:359.80},
+  fA: 0.341733,
+  fB: 1.895137,
+  fC: 0.709227,
+};
+
+let S = JSON.parse(JSON.stringify(BASE));
+
+function inter(p1,p2,p3,p4){
+  const d=(p1.x-p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x-p4.x);
+  if(Math.abs(d)<0.01) return null;
+  const t=((p1.x-p3.x)*(p3.y-p4.y)-(p1.y-p3.y)*(p3.x-p4.x))/d;
+  return {x:p1.x+t*(p2.x-p1.x), y:p1.y+t*(p2.y-p1.y)};
+}
+
+function recompute(){
+  const o=S.O;
+  S.Ap={x:o.x+S.fA*(S.A.x-o.x), y:o.y+S.fA*(S.A.y-o.y)};
+  S.Bp={x:o.x+S.fB*(S.B.x-o.x), y:o.y+S.fB*(S.B.y-o.y)};
+  S.Cp={x:o.x+S.fC*(S.C.x-o.x), y:o.y+S.fC*(S.C.y-o.y)};
+  S.P=inter(S.A,S.B,S.Ap,S.Bp);
+  S.Q=inter(S.A,S.C,S.Ap,S.Cp);
+  S.R=inter(S.B,S.C,S.Bp,S.Cp);
+}
+
+// ── Primitivas ─────────────────────────────────────────────────
+function fullLine(a,b,col,w,dash){
+  const dx=b.x-a.x,dy=b.y-a.y;
+  if(!dx&&!dy)return;
+  const ts=[];
+  if(Math.abs(dx)>0.01){ts.push(-a.x/dx);ts.push((W-a.x)/dx);}
+  if(Math.abs(dy)>0.01){ts.push(-a.y/dy);ts.push((H-a.y)/dy);}
+  ts.sort((x,y)=>x-y);
+  const pts=ts.map(t=>({x:a.x+t*dx,y:a.y+t*dy}))
+              .filter(p=>p.x>=-1&&p.x<=W+1&&p.y>=-1&&p.y<=H+1);
+  if(pts.length<2)return;
+  ctx.save();if(dash)ctx.setLineDash(dash);
+  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke();ctx.restore();
+}
+function seg(a,b,col,w){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke();}
+function dot(x,y,r,col){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();}
+function halo(x,y,r,col){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();}
+function fillTri(a,b,c,col){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.closePath();ctx.fillStyle=col;ctx.fill();}
+function lbl(tx,x,y,col,sz,bold){ctx.font=`${bold?'600 ':'400 '}${sz||13}px 'JetBrains Mono',monospace`;ctx.fillStyle=col;ctx.fillText(tx,x,y);}
+function vtx(p,label,fill,lcol,ox,oy){dot(p.x,p.y,8,fill);lbl(label,p.x+ox,p.y+oy,lcol,14,true);}
+function inCanvas(p){return p&&p.x>5&&p.x<W-5&&p.y>5&&p.y<H-5;}
+
+// ── RENDER ─────────────────────────────────────────────────────
+let cur=0, raf=null, aT=1;
+
+function draw(prog){
+  ctx.clearRect(0,0,W,H);
+  const av=Math.min(1,prog??1);
+
+  // cuadrícula tenue
+  ctx.save();ctx.globalAlpha=0.04;ctx.strokeStyle='#888';ctx.lineWidth=0.5;
+  for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+
+  // PASO 0: mostrar enunciado del teorema en el canvas
+  if(cur===0){
+    ctx.globalAlpha=av;
+    ctx.fillStyle='#0F1D32';
+    roundRect(60,60,W-120,H-120,16);ctx.fill();
+    ctx.strokeStyle='#C9A84C';ctx.lineWidth=1.5;
+    roundRect(60,60,W-120,H-120,16);ctx.stroke();
+
+    // Ícono decorativo
+    ctx.fillStyle='#C9A84C';ctx.font="bold 28px 'Playfair Display',serif";
+    ctx.textAlign='center';ctx.fillText('Teorema de Desargues',W/2,130);
+    ctx.textAlign='left';
+
+    // Separador
+    ctx.strokeStyle='#2A3F6A';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(120,148);ctx.lineTo(W-120,148);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Santaló
+    ctx.fillStyle='#C9A84C';ctx.font="600 11px 'JetBrains Mono',monospace";
+    ctx.fillText('SANTALÓ — Cap. 11, n.º 3, p. 130',120,175);
+    ctx.fillStyle='#E8C97A';ctx.font="italic 15px 'Playfair Display',serif";
+    wrapText('"Si dos triángulos están relacionados de manera que las rectas que unen vértices homólogos pasan por un mismo punto, los lados homólogos se cortan en puntos de una misma recta."',120,200,W-240,22);
+
+    // Separador
+    ctx.strokeStyle='#2A3F6A';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(120,300);ctx.lineTo(W-120,300);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Ayres
+    ctx.fillStyle='#6B9BD5';ctx.font="600 11px 'JetBrains Mono',monospace";
+    ctx.fillText('AYRES — Cap. 3, p. 32',120,328);
+    ctx.fillStyle='#9DC3E6';ctx.font="italic 15px 'Playfair Display',serif";
+    wrapText('"Si dos triángulos coplanares A₁A₂A₃ y B₁B₂B₃ son perspectivos desde un punto P, ellos son perspectivos desde una línea p; y recíprocamente."',120,353,W-240,22);
+
+    // Síntesis
+    ctx.fillStyle='#1A5025';
+    roundRect(120,448,W-240,52,8);ctx.fill();
+    ctx.strokeStyle='#2A7A35';ctx.lineWidth=1;
+    roundRect(120,448,W-240,52,8);ctx.stroke();
+    ctx.fillStyle='#4CAF50';ctx.font="600 11px 'JetBrains Mono',monospace";
+    ctx.textAlign='center';
+    ctx.fillText('perspectivo desde un PUNTO  ⟺  perspectivo desde una RECTA',W/2,470);
+    ctx.fillStyle='#8BC8A0';ctx.font="400 12px 'Inter',sans-serif";
+    ctx.fillText('Las dos condiciones son equivalentes y duales entre sí',W/2,490);
+    ctx.textAlign='left';
+    ctx.globalAlpha=1;
+    return; // no dibujar triángulos en paso 0
+  }
+
+  const {O,A,B,C,Ap,Bp,Cp,P,Q,R}=S;
+
+  if(cur>=2){ctx.globalAlpha=av*0.38;fullLine(O,A,'#4472A0',1.3,[10,7]);fullLine(O,B,'#4472A0',1.3,[10,7]);fullLine(O,C,'#4472A0',1.3,[10,7]);ctx.globalAlpha=1;}
+  if(cur>=6&&inCanvas(P)&&inCanvas(Q)){
+    ctx.globalAlpha=av*0.92;
+    ctx.save();ctx.shadowColor='#9B59B6';ctx.shadowBlur=10;
+    fullLine(P,Q,'#9B59B6',3.5);ctx.restore();
+    ctx.globalAlpha=av;
+    const mx=(P.x+Q.x)/2-50,my=(P.y+Q.y)/2-18;
+    ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(mx-3,my-14,30,20);
+    lbl(' r ',mx,my,'#C39BD3',14,true);ctx.globalAlpha=1;
+  }
+  if(cur>=4){ctx.globalAlpha=av*0.42;fullLine(A,B,'#5B9BD5',1.2,[6,5]);fullLine(Ap,Bp,'#C9A84C',1.2,[6,5]);ctx.globalAlpha=1;}
+  if(cur>=5){ctx.globalAlpha=av*0.42;fullLine(A,C,'#5B9BD5',1.2,[6,5]);fullLine(Ap,Cp,'#C9A84C',1.2,[6,5]);fullLine(B,C,'#5B9BD5',1.2,[6,5]);fullLine(Bp,Cp,'#C9A84C',1.2,[6,5]);ctx.globalAlpha=1;}
+  if(cur>=1){
+    ctx.globalAlpha=av;fillTri(A,B,C,'rgba(91,155,213,0.10)');
+    seg(A,B,'#5B9BD5',2.5);seg(B,C,'#5B9BD5',2.5);seg(C,A,'#5B9BD5',2.5);
+    vtx(A,'A','#5B9BD5','#9DC3E6',+12,-9);vtx(B,'B','#5B9BD5','#9DC3E6',-24,-9);vtx(C,'C','#5B9BD5','#9DC3E6',-24,+18);
+    ctx.globalAlpha=1;
+  }
+  if(cur>=3){
+    ctx.globalAlpha=av;fillTri(Ap,Bp,Cp,'rgba(201,168,76,0.10)');
+    seg(Ap,Bp,'#C9A84C',2.5);seg(Bp,Cp,'#C9A84C',2.5);seg(Cp,Ap,'#C9A84C',2.5);
+    vtx(Ap,"A'",'#C9A84C','#E8C97A',+12,+18);vtx(Bp,"B'",'#C9A84C','#E8C97A',+12,-9);vtx(Cp,"C'",'#C9A84C','#E8C97A',-28,+18);
+    ctx.globalAlpha=1;
+  }
+  if(cur>=4&&inCanvas(P)){
+    ctx.globalAlpha=av;halo(P.x,P.y,18,'rgba(224,80,64,0.20)');dot(P.x,P.y,10,'#E05040');
+    ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(P.x+12,P.y-18,24,18);lbl('P',P.x+13,P.y-5,'#F5A090',14,true);ctx.globalAlpha=1;
+  }
+  if(cur>=5){
+    ctx.globalAlpha=av;
+    if(inCanvas(Q)){halo(Q.x,Q.y,18,'rgba(232,147,74,0.20)');dot(Q.x,Q.y,10,'#E8934A');ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(Q.x+12,Q.y-18,24,18);lbl('Q',Q.x+13,Q.y-5,'#F5C090',14,true);}
+    if(inCanvas(R)){halo(R.x,R.y,18,'rgba(155,89,182,0.20)');dot(R.x,R.y,10,'#9B59B6');ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(R.x+12,R.y-18,24,18);lbl('R',R.x+13,R.y-5,'#C39BD3',14,true);}
+    ctx.globalAlpha=1;
+  }
+  if(cur>=2){
+    ctx.globalAlpha=av;halo(O.x,O.y,15,'rgba(255,255,255,0.10)');dot(O.x,O.y,10,'#ffffff');dot(O.x,O.y,4,'#4472A0');lbl('O',O.x+13,O.y-9,'#ffffff',14,true);ctx.globalAlpha=1;
+  }
+  if(cur===7&&inCanvas(P)&&inCanvas(Q)&&inCanvas(R)){
+    const area=Math.abs((Q.x-P.x)*(R.y-P.y)-(Q.y-P.y)*(R.x-P.x));
+    const ok=area<4000;
+    ctx.fillStyle=ok?'rgba(26,122,74,.90)':'rgba(192,57,43,.90)';
+    roundRect(W-248,H-40,238,30,8);ctx.fill();
+    ctx.font='500 12px JetBrains Mono,monospace';ctx.fillStyle='#fff';
+    ctx.fillText(ok?'✔  P, Q, R  son colineales':'⚠  posición degenerada',W-237,H-19);
+  }
+}
+
+// helper: texto con salto de línea
+function wrapText(text, x, y, maxW, lineH){
+  const words=text.split(' ');
+  let line='';
+  for(let i=0;i<words.length;i++){
+    const test=line+words[i]+' ';
+    if(ctx.measureText(test).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lineH;}
+    else line=test;
+  }
+  ctx.fillText(line,x,y);
+}
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+  ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);
+  ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);
+  ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);
+    this.arcTo(x+w,y,x+w,y+r,r);this.lineTo(x+w,y+h-r);
+    this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h);
+    this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);
+    this.arcTo(x,y,x+r,y,r);this.closePath();};}
+
+function animIn(){cancelAnimationFrame(raf);aT=0;function tick(){aT=Math.min(1,aT+0.045);draw(aT);if(aT<1)raf=requestAnimationFrame(tick);}tick();}
+
+// ══════════════════════════════════════════════════════════════
+// PASOS — con notas de contenido previo
+// ══════════════════════════════════════════════════════════════
+const STEPS=[
+  {
+    n:'',
+    t:'Enunciado del Teorema de Desargues',
+    b:'Este teorema es el corazón de la Geometría Proyectiva, la materia que se estudiará en Geometría II. Los dos enunciados: ambos dicen lo mismo con distinta notación. La síntesis al fondo muestra la equivalencia perfecta entre las dos condiciones.',
+    fml:null,
+    nota:null,
+    ref:''
+  },
+  {
+    n:'1',
+    t:'Triángulo ABC — primer triángulo (azul)',
+    b:'Se parte de algo familiar: un triángulo con sus tres vértices y tres lados. En Geometría I estudiamos triángulos con congruencia, semejanza y puntos notables. Aquí el triángulo es el punto de partida — lo que importa no serán sus medidas, sino cómo se relaciona con otro triángulo.',
+    fml:'△ ABC',
+    nota:{tag:'➔ PUENTE DESDE GEO I',
+      txt:'En Geometría I se trabaja con triángulos con criterios de congruencia (LAL, ALA, LLL) y semejanza (AAA, LAL, LLL), midiendo lados y ángulos. En Geometría Proyectiva no hay distancias ni ángulos: solo importa qué puntos están sobre qué rectas (incidencia). Ayres (p. 30) describe al triángulo como la configuración:\n\n  ⎛ 3  2 ⎞\n  ⎝ 2  3 ⎠\n\n3 puntos, 3 líneas, 2 líneas por punto, 2 puntos por línea.'},
+    ref:'Ayres, Cap. 3, p. 30'
+  },
+  {
+    n:'2',
+    t:'Centro de perspectividad O',
+    b:"Se elige un punto O fuera del triángulo y trazamos rectas desde O hacia cada vértice, prolongándolas más allá. La hipótesis del teorema es que existe un O tal que las rectas AA', BB' y CC' concurren en él. Ese O se llama centro de perspectividad o centro de homología.",
+    fml:'O = centro de homología / perspectividad',
+    nota:{tag:'➔ PUENTE DESDE GEO I',
+      txt:'En los apuntes de la materia se estudió la homotecia H(O, k): una transformación que multiplica todas las distancias desde un centro O por un mismo factor k. Lo propio de esa transformación es que el factor es el MISMO para todos los vértices. Lo que introduce la Geometría Proyectiva es la generalización: O sigue siendo el centro, pero cada vértice puede tener un factor distinto.'},
+    ref:'Ayres, Cap. 1, p. 10'
+  },
+  {
+    n:'3',
+    t:"Triángulo A'B'C' — perspectivo desde O",
+    b:"Se colocan A\', B\' y C\' sobre las rectas OA, OB y OC. Por construcción, AA\', BB\' y CC\' concurren en O: los triángulos son perspectivos desde O.",
+    fml:"A\' = O + αA ,   B\' = O + βB ,   C\' = O + γC   (Santaló, Cap. 11, n.º 3, p. 130)",
+    nota:{tag:'➔ DIFERENCIA CON HOMOTECIA (Geo I)',
+      txt:'En los apuntes de la materia se define: "al trazar rectas que pasen por los vértices homólogos de dos triángulos homotéticos, las tres rectas se cortan en un mismo punto" (apuntes, Transformaciones Geométricas). Ese punto es exactamente el centro O del Teorema de Desargues. La diferencia es que en la homotecia el factor k es el mismo para todos los vértices, mientras que aquí cada vértice tiene su propio factor α, β, γ.'},
+    ref:'Ayres, Cap. 1, p. 10  ·  Santaló, Cap. 11, n.º 3, p. 130'
+  },
+  {
+    n:'4',
+    t:"Punto P = AB ∩ A'B'  (rojo)",
+    b:"Se extienden los lados homólogos AB y A'B' más allá de sus vértices hasta que se cruzan. P es ese punto de cruce: pertenece a la recta AB y a la recta A'B' al mismo tiempo, aunque no está dentro de ninguno de los dos segmentos sino en su prolongación.",
+    fml:"P = A' − B' = αA − βB   (Santaló, ec. 5, p. 131)",
+    nota:{tag:'➔ NOVEDAD DE GP vs GEO I',
+      txt:'En Geometría I (euclidiana) el Axioma 7 de los apuntes de la materia dice: por un punto exterior a una recta pasa una y solo una paralela. Eso implica que dos rectas paralelas no se cortan. La gran novedad de la Geometría Proyectiva es justamente eliminar esa excepción: se agregan "puntos en el infinito" donde las paralelas sí se cortan. Así el teorema funciona para cualquier configuración, sin excepciones.'},
+    ref:'Santaló, pp. 130–131  ·  Axioma 7, Unidad 1 — apuntes de la materia'
+  },
+  {
+    n:'5',
+    t:"Puntos Q (naranja) y R (violeta)",
+    b:"Se repite con los otros dos pares de lados homólogos: AC ∩ A'C' = Q (naranja) y BC ∩ B'C' = R (violeta). Se tienen tres puntos con tres colores. La pregunta es: ¿P, Q y R están sobre una misma recta?",
+    fml:"Q = βB − γC    R = γC − αA   (Santaló, ec. 6, p. 131)",
+    nota:{tag:'➔ PUENTE DESDE GEO I — colinealidad',
+      txt:'La propiedad que se demuestra es que P, Q, R son colineales: están sobre una misma recta.'},
+    ref:'Santaló, p. 131'
+  },
+  {
+    n:'6',
+    t:'Eje r — P, Q, R son COLINEALES  ∎',
+    b:'La recta violeta pasa exactamente por P, Q y R. Esta es la conclusión del teorema. La prueba de Santaló usa coordenadas homogéneas y muestra que P+Q+R se cancela telescópicamente dando 0 — condición algebraica exacta de colinealidad en el plano proyectivo.',
+    fml:'P + Q + R = (αA−βB) + (βB−γC) + (γC−αA) = 0  ⟹  colineales sobre r  ∎',
+    nota:{tag:'➔ ANTICIPO DE GEOMETRÍA II',
+      txt:'Santaló (p. 131) señala: "lo que prueba que los tres puntos son linealmente dependientes, es decir, que están alineados". La ecuación P+Q+R=0 es la condición algebraica exacta de colinealidad en el plano proyectivo.'},
+    ref:'Santaló, p. 131, ec. (7)  ·  Ayres, pp. 34–35'
+  },
+  {
+    n:'▸',
+    t:'Modo libre — explorá la configuración',
+    b:"Se puede arrastrar A, B, C u O. El segundo triángulo A'B'C' se recalcula sobre las mismas rectas perspectivas. P, Q, R y el eje r se actualizan en tiempo real. Sin importar la posición, siempre son colineales — eso es exactamente lo que garantiza el Teorema de Desargues.",
+    fml:null,
+    nota:null,
+    ref:''
+  },
+];
+
+function updateUI(){
+  const s=STEPS[cur];
+  document.getElementById('snum').textContent=s.n;
+  document.getElementById('stitle').textContent=s.t;
+  document.getElementById('sbody').textContent=s.b;
+
+  // Enunciado (solo paso 0)
+  document.getElementById('enunciado-box').style.display=cur===0?'block':'none';
+
+  // Nota visto en clase
+  const nb=document.getElementById('nota-clase-box');
+  if(s.nota){
+    nb.style.display='flex';
+    document.getElementById('nota-tag').textContent=s.nota.tag;
+    document.getElementById('nota-texto').textContent=s.nota.txt;
+  } else {
+    nb.style.display='none';
+  }
+
+  // Fórmula
+  const sf=document.getElementById('sfml');
+  if(s.fml){sf.style.display='block';sf.textContent=s.fml;}else sf.style.display='none';
+
+  document.getElementById('sref').textContent=s.ref;
+  document.getElementById('bp').disabled=cur===0;
+  document.getElementById('bn').disabled=cur===STEPS.length-1;
+  document.getElementById('hint').textContent=cur===7?'▸ Se puede arrastrar A, B, C u O para explorar':'';
+  document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i===cur));
+}
+
+function go(i){cur=i;updateUI();animIn();}
+function nxt(){if(cur<STEPS.length-1){cur++;updateUI();animIn();}}
+function prev(){if(cur>0){cur--;updateUI();animIn();}}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nxt();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prev();}
+});
+
+// ── Drag (modo libre) ──────────────────────────────────────────
+let drag=null,ox=0,oy=0;
+function nearest(mx,my){
+  let best=null,bd=999;
+  ['O','A','B','C'].forEach(k=>{const p=S[k],d=Math.hypot(p.x-mx,p.y-my);if(d<bd){bd=d;best=k;}});
+  return bd<32?best:null;
+}
+function getXY(e){
+  const r=cv.getBoundingClientRect(),sx=W/r.width,sy=H/r.height;
+  const src=e.touches?e.touches[0]:e;
+  return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};
+}
+cv.addEventListener('mousedown',e=>{if(cur!==7)return;const{x,y}=getXY(e);drag=nearest(x,y);if(drag){ox=S[drag].x-x;oy=S[drag].y-y;}});
+cv.addEventListener('mousemove',e=>{if(!drag)return;const{x,y}=getXY(e);S[drag]={x:Math.max(10,Math.min(W-10,x+ox)),y:Math.max(10,Math.min(H-10,y+oy))};recompute();draw(1);});
+cv.addEventListener('mouseup',()=>{drag=null;});
+cv.addEventListener('touchstart',e=>{if(cur!==7)return;e.preventDefault();const{x,y}=getXY(e);drag=nearest(x,y);if(drag){ox=S[drag].x-x;oy=S[drag].y-y;}},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();if(!drag)return;const{x,y}=getXY(e);S[drag]={x:Math.max(10,Math.min(W-10,x+ox)),y:Math.max(10,Math.min(H-10,y+oy))};recompute();draw(1);},{passive:false});
+cv.addEventListener('touchend',()=>{drag=null;});
+
+updateUI();draw(1);
+</script>
+</body>
+</html>
